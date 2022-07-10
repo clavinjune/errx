@@ -1,4 +1,4 @@
-// Copyright 2022 clavinjune/errutil
+// Copyright 2022 clavinjune/errx
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package errutil_test
+package errx_test
 
 import (
 	"database/sql"
@@ -22,16 +22,16 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/clavinjune/errutil"
+	"github.com/clavinjune/errx"
 	"github.com/stretchr/testify/require"
 )
 
 const (
 	expectedFileLine = "error_test.go:"
-	expectedFuncName = "errutil_test.TestErr_Error"
+	expectedFuncName = "errx_test.TestErr_Error"
 )
 
-func helperCompareNestedError(r *require.Assertions, actual map[string]any, expected *errutil.Err) {
+func helperCompareNestedError(r *require.Assertions, actual map[string]any, expected *errx.Err) {
 	r.Equal(expectedFuncName, actual["funcname"])
 	r.True(strings.HasPrefix(actual["fileline"].(string), expectedFileLine))
 	if expected.Message != "" {
@@ -42,15 +42,15 @@ func helperCompareNestedError(r *require.Assertions, actual map[string]any, expe
 	case string:
 		r.Equal(expected.Caused.Error(), caused)
 	case map[string]any:
-		helperCompareNestedError(r, caused, expected.Caused.(*errutil.Err))
+		helperCompareNestedError(r, caused, expected.Caused.(*errx.Err))
 	}
 }
 
 func TestErr_Error(t *testing.T) {
 	type testCase struct {
 		name     string
-		error    *errutil.Err
-		expected *errutil.Err
+		error    *errx.Err
+		expected *errx.Err
 	}
 
 	runFunc := func(tc testCase) func(t *testing.T) {
@@ -67,51 +67,51 @@ func TestErr_Error(t *testing.T) {
 	tt := []testCase{
 		{
 			name:  "new",
-			error: errutil.New("this is an error"),
-			expected: &errutil.Err{
+			error: errx.New("this is an error"),
+			expected: &errx.Err{
 				Caused: errors.New("this is an error"),
 			},
 		},
 		{
 			name:  "new with double quote",
-			error: errutil.New(`"this is an error"`),
-			expected: &errutil.Err{
+			error: errx.New(`"this is an error"`),
+			expected: &errx.Err{
 				Caused: errors.New(`"this is an error"`),
 			},
 		},
 		{
 			name:  "wrap simple error",
-			error: errutil.Wrap(sql.ErrNoRows),
-			expected: &errutil.Err{
+			error: errx.Wrap(sql.ErrNoRows),
+			expected: &errx.Err{
 				Caused: sql.ErrNoRows,
 			},
 		},
 		{
 			name:  "wrap simple error with message",
-			error: errutil.WrapWithMsg(sql.ErrNoRows, "wrap simple error with message"),
-			expected: &errutil.Err{
+			error: errx.WrapWithMsg(sql.ErrNoRows, "wrap simple error with message"),
+			expected: &errx.Err{
 				Caused:  sql.ErrNoRows,
 				Message: "wrap simple error with message",
 			},
 		},
 		{
 			name:  "wrap simple error with double quoted message",
-			error: errutil.WrapWithMsg(sql.ErrNoRows, `"wrap simple error with double quoted message"`),
-			expected: &errutil.Err{
+			error: errx.WrapWithMsg(sql.ErrNoRows, `"wrap simple error with double quoted message"`),
+			expected: &errx.Err{
 				Caused:  sql.ErrNoRows,
 				Message: `"wrap simple error with double quoted message"`,
 			},
 		},
 		{
 			name: "nested",
-			error: errutil.WrapWithMsg(
-				errutil.WrapWithMsg(
-					errutil.New("inner error"),
+			error: errx.WrapWithMsg(
+				errx.WrapWithMsg(
+					errx.New("inner error"),
 					"inner error message"),
 				`"wrap simple error with double quoted message"`),
-			expected: &errutil.Err{
-				Caused: &errutil.Err{
-					Caused: &errutil.Err{
+			expected: &errx.Err{
+				Caused: &errx.Err{
+					Caused: &errx.Err{
 						Caused: errors.New("inner error"),
 					},
 					Message: "inner error message",
@@ -135,12 +135,12 @@ func TestErr_Unwrap(t *testing.T) {
 		Addr: "test addr",
 	}
 
-	var err error = errutil.WrapWithMsg(inner, "wrap simple error with message")
+	var err error = errx.WrapWithMsg(inner, "wrap simple error with message")
 
 	r.ErrorIs(err, inner)
 	r.NotErrorIs(err, sql.ErrTxDone)
 
-	var target *errutil.Err
+	var target *errx.Err
 	r.ErrorAs(err, &target)
 	r.Equal(target, err)
 

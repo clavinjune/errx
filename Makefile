@@ -1,4 +1,4 @@
-# Copyright 2022 clavinjune/errutil
+# Copyright 2022 clavinjune/errx
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ fmt:
 	@go run $(importer) -w .
 	@go vet ./...
 	@go mod tidy
-	@go run $(licenser) apply -r "clavinjune/errutil" 2> /dev/null
+	@go run $(licenser) apply -r "clavinjune/errx" 2> /dev/null
 
 test:
 	@go test -count=1 -v -json -coverprofile=coverage.out -covermode=count ./... > result.json

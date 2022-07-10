@@ -1,4 +1,4 @@
-module github.com/clavinjune/errutil
+module github.com/clavinjune/errx
 
 go 1.18
 
